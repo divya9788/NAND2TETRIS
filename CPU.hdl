@@ -1,0 +1,68 @@
+// Author: Chirag Chanchal (chiragchanchal)
+// Project: Nand2Tetris - Project 5 (Hack Computer Architecture)
+// Remarks: Original implementation by Chirag Chanchal. All rights reserved.
+
+/**
+ * Hack Central Processing Unit (CPU):
+ * Decodes and executes 16-bit Hack A-instructions and C-instructions,
+ * drives memory writes, and updates the Program Counter (PC).
+ */
+CHIP CPU {
+    IN  inM[16],         // M value input (contents of RAM[A])
+        instruction[16], // Instruction to execute
+        reset;           // 1 resets PC to 0; 0 continues execution
+
+    OUT outM[16],        // Data output to Memory
+        writeM,          // Write enable for Memory
+        addressM[15],    // Target address in Data Memory
+        pc[15];          // Next instruction address in ROM
+
+    PARTS:
+    // instruction[15] == 0 -> A-instruction; 1 -> C-instruction.
+    Not(in=instruction[15], out=isAInstruction);
+
+    // Select immediate value for A-instructions or ALU output for C-instructions.
+    Mux16(a=instruction, b=aluResult, sel=instruction[15], out=aRegisterIn);
+    // Load A-register on A-instructions or when C-instruction dest bit d1 (bit 5) is set.
+    Or(a=isAInstruction, b=instruction[5], out=loadARegister);
+    ARegister(in=aRegisterIn, load=loadARegister, out=aRegisterOut, out[0..14]=addressM);
+
+    // Load D-register only on C-instructions with dest bit d2 (bit 4) set.
+    And(a=instruction[15], b=instruction[4], out=loadDRegister);
+    DRegister(in=aluResult, load=loadDRegister, out=dRegisterOut);
+
+    // ALU second operand is A (a-bit == 0) or M (a-bit == 1, bit 12).
+    Mux16(a=aRegisterOut, b=inM, sel=instruction[12], out=aluYInput);
+
+    ALU(
+        x=dRegisterOut,
+        y=aluYInput,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=aluResult,
+        out=outM,
+        zr=isZero,
+        ng=isNegative
+    );
+
+    // Assert writeM only on C-instructions with dest bit d3 (bit 3) set.
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Evaluate jump conditions: j1 (bit 2: <0), j2 (bit 1: ==0), j3 (bit 0: >0).
+    And(a=isNegative, b=instruction[2], out=jumpLt);
+    And(a=isZero, b=instruction[1], out=jumpEq);
+    Or(a=isNegative, b=isZero, out=isNonPositive);
+    Not(in=isNonPositive, out=isPositive);
+    And(a=isPositive, b=instruction[0], out=jumpGt);
+
+    Or(a=jumpLt, b=jumpEq, out=jumpLe);
+    Or(a=jumpLe, b=jumpGt, out=jumpRequested);
+    And(a=instruction[15], b=jumpRequested, out=shouldJump);
+
+    // PC handles reset > load > inc precedence internally.
+    PC(in=aRegisterOut, load=shouldJump, inc=true, reset=reset, out[0..14]=pc);
+}

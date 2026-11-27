@@ -1,0 +1,29 @@
+// Author: Chirag Chanchal (chiragchanchal)
+// Project: Nand2Tetris - Project 5 (Hack Computer Architecture)
+// Remarks: Original implementation by Chirag Chanchal. All rights reserved.
+
+/**
+ * Hack Computer top-level chip:
+ * Integrates instruction ROM, Hack CPU, and data/I/O Memory.
+ */
+CHIP Computer {
+    IN reset;
+
+    PARTS:
+    ROM32K(address=pcBus, out=instructionBus);
+    CPU(
+        inM=memoryDataOut,
+        instruction=instructionBus,
+        reset=reset,
+        outM=cpuDataOut,
+        writeM=writeMemory,
+        addressM=memoryAddress,
+        pc=pcBus
+    );
+    Memory(
+        in=cpuDataOut,
+        load=writeMemory,
+        address=memoryAddress,
+        out=memoryDataOut
+    );
+}

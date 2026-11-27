@@ -1,6 +1,4 @@
-// Author: Chirag Chanchal (chiragchanchal)
 // Project: Nand2Tetris - Capstone (Hack Assembly)
-// Remarks: Original implementation by Chirag Chanchal. All rights reserved.
 // Description: Computes R2 = max(R0, R1).
 
     @R0

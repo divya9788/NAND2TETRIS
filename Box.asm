@@ -1,6 +1,4 @@
-// Author: Chirag Chanchal (chiragchanchal)
 // Project: Nand2Tetris - Capstone (Keyboard-Controlled Screen Box)
-// Remarks: Original implementation by Chirag Chanchal. All rights reserved.
 //
 // Parameter guide for roll-number suffix K (last 3 digits of roll number):
 //   Starting row   = K

@@ -1,6 +1,4 @@
-// Author: Chirag Chanchal (chiragchanchal)
 // Project: Nand2Tetris - Capstone (Hack Assembly)
-// Remarks: Original implementation by Chirag Chanchal. All rights reserved.
 // Description: Draws a 16x16-pixel black rectangle at top-left of screen.
 
     @16
